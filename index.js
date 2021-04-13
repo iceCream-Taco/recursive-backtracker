@@ -47,6 +47,8 @@ https://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
 let mazeWidthInput, mazeHeightInput, step, generate; // buttons and text boxes
 let mazeWidth, mazeHeight; // maze width and height as numerical values
 let maze, cellSize; // maze and cell size
+let status; // same dimension 2D array to store cell progress
+let colourLookup; // colour lookup for status
 let isInitialised = false // whether the maze is initialised
 let isDone = true; // are we ready to generate a new maze?
 let carver; // generator used for stepping through
@@ -130,6 +132,7 @@ function setup() {
     // other setup
     textSize(20);
     textAlign(RIGHT, TOP);
+    colourLookup = {0: 128, 1: 255, 2: color(200, 200, 255)};
     noLoop(); // big mazes are too performance intensive to continually draw, so just redraw them when needed
 }
 
@@ -149,7 +152,8 @@ function draw() {
             row.forEach((cell, x) => {
                 // fill square
                 noStroke();
-                fill(cell === 0 ? 128 : 255);
+                // draw colour according to status
+                fill(colourLookup[status[y][x]]);
                 square(x * cellSize, y * cellSize, cellSize);
 
                 // draw walls
@@ -192,6 +196,7 @@ function initMaze() {
 
     // initialise the maze as a 2D array of zeroes, with the correct dimensions, set correct cell size
     maze = Array.from(Array(mazeHeight), _ => Array(mazeWidth).fill(0));
+    status = Array.from(Array(mazeHeight), _ => Array(mazeWidth).fill(0));
     cellSize = min(width / mazeWidth, (height - 60) / mazeHeight); // the -60 accounts for the scrollbar that shows up plus the 40px offset we did earlier
     isInitialised = true;
 }
@@ -199,6 +204,9 @@ function initMaze() {
 function* carveRecursive(grid, cx, cy, step = false) {
     // 'carve' a wall out of the grid. This is by no means the most efficient way to do so.
     // this is the main worker function, and is usually recursive, hence the name recursive backtracking
+
+    // set status of cell to 'in progress' (1)
+    status[cy][cx] = 1;
 
     // first, randomise an array of directions. The constants used can be found at the top of the file
     let directions = shuffle([N, E, S, W]);
@@ -218,14 +226,19 @@ function* carveRecursive(grid, cx, cy, step = false) {
 
             if (step) { yield; }
             yield* carveRecursive(grid, nx, ny, step);
-        } else if (step) {
-            yield;
         }
     }
+
+    // set status of cell to 'finished' (2)
+    status[cy][cx] = 2;
+    yield;
 }
 
 function* carveIterative(grid, cx, cy, step = false) {
     // iterative version of carveRecursive, used for bigger mazes
+
+    // set status of cell to 'in progress' (1)
+    status[cy][cx] = 1;
 
     // each 'step' gets stored in the array as the coordinates and directions to do
     let cells = [{x: cx, y: cy, directions: shuffle([N, E, S, W])}];
@@ -236,6 +249,9 @@ function* carveIterative(grid, cx, cy, step = false) {
         // if not, remove it and if there are now no cells left, break
         let cell = cells[0];
         if (cell.directions.length === 0) {
+            // set status of cell to 'finished' (2)
+            status[cell.y][cell.x] = 2;
+
             cells.shift();
             if (cells.length === 0) break;
         }
@@ -250,6 +266,9 @@ function* carveIterative(grid, cx, cy, step = false) {
             grid[ny][nx] |= OPPOSITE[direction];
             // instead of recursing, add the new cell to the front of the array
             cells.unshift({x: nx, y: ny, directions: shuffle([N, E, S, W])});
+
+            // set status of cell to 'in progress' (1)
+            status[cells[0].y][cells[0].x] = 1;
         }
 
         if (step) { yield; }
