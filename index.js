@@ -20,8 +20,6 @@ https://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
 
  */
 
-// TODO Implement colours
-
 // all the changing stuff
 let mazeWidthInput, mazeHeightInput, step, generate; // buttons and text boxes
 let mazeWidth, mazeHeight; // maze width and height as numerical values
