@@ -20,8 +20,6 @@ https://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
 
  */
 
-// TODO Implement colours
-
 // all the changing stuff
 let mazeWidthInput, mazeHeightInput, step, generate; // buttons and text boxes
 let mazeWidth, mazeHeight; // maze width and height as numerical values
@@ -71,6 +69,7 @@ function setup() {
             // same as above, but with iterative
             carveIterative(maze, randomInt(0, mazeWidth), randomInt(0, mazeHeight)).next();
         }
+        isDone = true;
 
         // end timer
         genTime = millis() - initTime;
@@ -95,14 +94,14 @@ function setup() {
             } else {
                 carver = carveIterative(maze, randomInt(0, mazeWidth), randomInt(0, mazeHeight), true);
             }
-        } else {
-            // or call the next step and redraw
-            let result = carver.next();
-            redraw();
-
-            // if we are done, set done to true so that a new maze is generated next time on click
-            if (result.done) isDone = true;
         }
+
+        // or call the next step and redraw
+        let result = carver.next();
+        redraw();
+
+        // if we are done, set done to true so that a new maze is generated next time on click
+        if (result.done) isDone = true;
 
         // end timer
         genTime = millis() - initTime;
@@ -203,14 +202,18 @@ function* carveRecursive(grid, cx, cy, step = false) {
             grid[cy][cx] |= direction;
             grid[ny][nx] |= OPPOSITE[direction];
 
-            if (step) { yield; }
-            yield* carveRecursive(grid, nx, ny, step);
+            if (step) {
+                yield;
+                yield* carveRecursive(grid, nx, ny, step);
+            } else {
+                carveRecursive(grid, nx, ny, step).next();
+            }
         }
     }
 
     // set status of cell to 'finished' (2)
     status[cy][cx] = 2;
-    yield;
+    if (step) { yield; }
 }
 
 function* carveIterative(grid, cx, cy, step = false) {
