@@ -42,14 +42,13 @@ https://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
  */
 
 // TODO Implement colours
-// TODO remove isDone so multiple mazes can be made without refresh
 
 // all the changing stuff
 let mazeWidthInput, mazeHeightInput, step, generate; // buttons and text boxes
 let mazeWidth, mazeHeight; // maze width and height as numerical values
 let maze, cellSize; // maze and cell size
 let isInitialised = false // whether the maze is initialised
-let isDone = false; // whether the maze generation is done
+let isDone = true; // are we ready to generate a new maze?
 let carver; // generator used for stepping through
 let drawTime, genTime = 0; // draw time, generation time
 
@@ -80,9 +79,6 @@ function setup() {
     generate.size(100);
     // initialise the maze, then choose recursive or iterative depending on the size
     generate.mousePressed(() => {
-        // if we are done, don't bother
-        if (isDone) return;
-
         // start timer
         let initTime = millis();
 
@@ -98,47 +94,43 @@ function setup() {
         // end timer
         genTime = millis() - initTime;
 
-        // we did everything now, so stop the loop and register being done
-        isDone = true;
-        noLoop();
+        // we did everything now, so redraw the maze
+        redraw();
     });
 
     step = createButton("Step");
     step.position(340, 10);
     step.size(100);
     step.mousePressed(() => {
-        // if we are done, don't bother
-        if (isDone) return;
-
         // start timer
         let initTime = millis();
 
         // initialise if needed
-        if (!isInitialised) {
+        if (isDone) {
             initMaze();
+            isDone = false;
             if (mazeWidth * mazeHeight < 5000) {
                 carver = carveRecursive(maze, randomInt(0, mazeWidth), randomInt(0, mazeHeight), true);
             } else {
                 carver = carveIterative(maze, randomInt(0, mazeWidth), randomInt(0, mazeHeight), true);
             }
         } else {
-            // then call the next step
+            // or call the next step and redraw
             let result = carver.next();
+            redraw();
 
-            // end timer
-            genTime = millis() - initTime;
-
-            // and if done, call noLoop() and register that we are done
-            if (result.done) {
-                noLoop();
-                isDone = true;
-            }
+            // if we are done, set done to true so that a new maze is generated next time on click
+            if (result.done) isDone = true;
         }
+
+        // end timer
+        genTime = millis() - initTime;
     });
 
     // other setup
     textSize(20);
     textAlign(RIGHT, TOP);
+    noLoop(); // big mazes are too performance intensive to continually draw, so just redraw them when needed
 }
 
 function draw() {
