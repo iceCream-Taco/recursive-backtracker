@@ -5,7 +5,7 @@ This code is meant to be a relatively simple explanation of the algorithm(s) sta
 the algorithm works, look at the carveRecursive function near the bottom of the file. You can also enter details and
 then press generate to instantly generate it, or press step to step through it to see how it works in action.
 
-The pseudocode for the standard recursive form of the algorithm can be found in pseudocode.txt
+The pseudocode (as well as JS and a couple of other languages) for the standard recursive form of the algorithm can be found in pseudocode.md
 
 ## Sources
 
