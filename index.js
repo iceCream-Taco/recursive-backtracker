@@ -39,7 +39,8 @@ const DY = {[N]: 1, [E]: 0, [S]: -1, [W]: 0}; // movement for a given direction,
 
 function setup() {
     // setup window
-    createCanvas(windowWidth, windowHeight);
+    let cnv = createCanvas(windowWidth, windowHeight - 40);
+	cnv.position(0, 40); // offset canvas by 40px for the buttons
 
     // create inputs
     mazeWidthInput = createInput();
@@ -118,9 +119,6 @@ function draw() {
     // clear screen
     background(255);
 
-    // offset drawing by 40px down to make space for text boxes
-    translate(0, 40);
-
     // start drawTime timer
     let initTime = millis();
 
@@ -162,9 +160,9 @@ function draw() {
     // draw fps, other performance values
     stroke(0);
     fill(0);
-    text(`${frameRate().toFixed(1)} fps`, width - 20, 0); // -20 offsets text outside of scrollbar
-    text(`Gen time: ${genTime.toFixed(2)} ms`, width - 20, 20);
-    text(`Draw time: ${drawTime.toFixed(2)} ms`, width - 20, 40);
+    text(`${frameRate().toFixed(1)} fps`, width, 0);
+    text(`Gen time: ${genTime.toFixed(2)} ms`, width, 20);
+    text(`Draw time: ${drawTime.toFixed(2)} ms`, width, 40);
 }
 
 function initMaze() {
@@ -175,7 +173,7 @@ function initMaze() {
     // initialise the maze as a 2D array of zeroes, with the correct dimensions, set correct cell size
     maze = Array.from(Array(mazeHeight), _ => Array(mazeWidth).fill(0));
     status = Array.from(Array(mazeHeight), _ => Array(mazeWidth).fill(0));
-    cellSize = min(width / mazeWidth, (height - 60) / mazeHeight); // the -60 accounts for the scrollbar that shows up plus the 40px offset we did earlier
+    cellSize = min(width / mazeWidth, height / mazeHeight);
     isInitialised = true;
 }
 
